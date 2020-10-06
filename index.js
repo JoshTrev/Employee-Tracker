@@ -1,5 +1,6 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql");
+const cTable = require('console.table');
 
 const connection = mysql.createConnection({
     host: "localhost",
@@ -99,7 +100,7 @@ function viewRoles() {
                         connection.query(`SELECT * FROM employee WHERE role_id=${roleIDString}`, function (err, res) {
                             if (err)
                                 throw err;
-                            console.log(res);
+                            console.table(res);
 
                             mainMenu();
                         });
@@ -110,6 +111,51 @@ function viewRoles() {
 }
 
 function viewEmployees() {
+    connection.query("SELECT * FROM role", function (err, roleData) {
+        if (err)
+            throw err;
+
+        const roleTitle = roleData.map(role => role.title);
+        const roleIDs = roleData.map(role => role.id);
+
+        connection.query("SELECT * FROM employee", function (err, employeeData) {
+            if (err)
+                throw err;
+
+            let employeeArray = [];
+
+            let rolePlaceHolder;
+            let managerPlaceHolder
+
+            for (let i = 0; i < employeeData.length; i++) {
+                for (let x = 0; x < roleIDs.length; x++) {
+                    if (employeeData[i].role_id === roleIDs[x]){
+                        rolePlaceHolder = roleTitle[x];
+                    }
+                }
+
+                for (let y = 0; y < employeeData.length; y++) {
+                    if (employeeData[i].manager_id === employeeData[y].id){
+                        managerPlaceHolder = employeeData[y].first_name;
+                    }
+                }
+                
+                var employeeObject = {
+                    id: employeeData[i].id,
+                    first_name: employeeData[i].first_name,
+                    last_name: employeeData[i].last_name,
+                    role: rolePlaceHolder,
+                    manager: managerPlaceHolder
+                }
+
+                employeeArray.push(employeeObject);
+            }
+
+            console.table(employeeArray);
+
+            mainMenu();
+        })
+    })
 
 }
 
