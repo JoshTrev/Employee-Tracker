@@ -67,7 +67,46 @@ function viewDepartments() {
 }
 
 function viewRoles() {
+    connection.query("SELECT * FROM role", function (err, roleData) {
+        if (err)
+            throw err;
 
+        const roleTitle = roleData.map(role => role.title);
+        const roleIDs = roleData.map(role => role.id);
+
+        console.log(roleTitle);
+        console.log(roleIDs);
+
+        inquirer
+            .prompt([
+                {
+                    type: "list",
+                    name: "role",
+                    message: "Which role would you like to view?",
+                    choices: roleTitle
+                }
+            ])
+            .then(function (response) {
+
+                console.log(response);
+
+                for (let i = 0; i < roleTitle.length; i++) {
+
+                    if (response.role === roleTitle[i]) {
+
+                        roleIDString = roleIDs[i].toString();
+
+                        connection.query(`SELECT * FROM employee WHERE role_id=${roleIDString}`, function (err, res) {
+                            if (err)
+                                throw err;
+                            console.log(res);
+
+                            mainMenu();
+                        });
+                    }
+                }
+            });
+    })
 }
 
 function viewEmployees() {
@@ -84,13 +123,13 @@ function addDepartment() {
             }
         ])
         .then(function (response) {
-            var query = connection.query(
+            connection.query(
                 "INSERT INTO department SET ?",
                 {
                     name: response.nameOfDepartment,
                 },
             );
-            console.log("Adding new department...\n");
+            console.log("Department added successfully!\n");
             mainMenu();
         });
 }
@@ -129,27 +168,27 @@ function addRole() {
                     choices: departmentNames
                 }
             ])
-            .then(({ newRole, newSalary, chosenDepartment }) => {
-                
-                console.log(newRole);
-                console.log(newSalary);
-                console.log(chosenDepartment);
-                
-                for (let i = 0; i < departmentNames.length; i++){
-                    if(chosenDepartment === departmentNames[i]){
+            .then(function (response) {
+
+                console.log(response.title);
+                console.log(response.salary);
+                console.log(response.department);
+
+                for (let i = 0; i < departmentNames.length; i++) {
+                    if (response.department === departmentNames[i]) {
                         var chosenDepartmentID = departmentID[i];
                     }
                 }
 
-                var query = connection.query(
+                connection.query(
                     "INSERT INTO role SET ?",
                     {
-                        name: newRole,
-                        salary: newSalary,
+                        title: response.title,
+                        salary: response.salary,
                         department_id: chosenDepartmentID
-                    },
+                    }
                 );
-                console.log("Adding new department...\n");
+                console.log("Department added successfully!\n");
                 mainMenu();
             });
     })
