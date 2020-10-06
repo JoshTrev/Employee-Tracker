@@ -64,7 +64,120 @@ function mainMenu() {
 }
 
 function viewDepartments() {
+    connection.query("SELECT * FROM department", function (err, departmentData) {
+        if (err)
+            throw err;
 
+        const department = departmentData.map(role => role.name);
+        const departmentIDs = departmentData.map(role => role.id);
+
+        if (departmentIDs.length < 1) {
+            console.log("\nThere are currently no departments.\n")
+
+            mainMenu();
+
+        } else {
+            inquirer
+                .prompt([
+                    {
+                        type: "list",
+                        name: "department",
+                        message: "Which department would you like to view?",
+                        choices: department
+                    }
+                ])
+                .then(function (response) {
+
+                    for (let i = 0; i < department.length; i++) {
+
+                        if (response.department === department[i]) {
+
+                            departmentIDString = departmentIDs[i].toString();
+                        }
+                    }
+
+                    connection.query(`SELECT * FROM role WHERE department_id=${departmentIDString}`, function (err, roleData) {
+                        if (err)
+                            throw err;
+
+                        const roleTitle = roleData.map(role => role.title);
+                        const roleIDs = roleData.map(role => role.id);
+
+                        if (roleIDs.length < 1) {
+                            console.log("\nThere are currently no employees in this department.\n")
+
+                            mainMenu();
+
+                        } else {
+                            var roleIDsArray = [];
+                            var useRoleIDsArray = false;
+
+                            for (let i = 0; i < roleIDs.length; i++) {
+                                if (i > 0) {
+                                    let currentRoleID = i.toString();
+                                    let newRoleID = ` OR role_id=${currentRoleID}`;
+                                    roleIDsArray.push(newRoleID);
+
+                                    useRoleIDsArray = true;
+                                }
+                            }
+
+                            let roleID1 = roleIDs[0].toString();
+
+                            let roleIDsString = "";
+
+                            if (useRoleIDsArray === true) {
+                                roleIDsString = roleIDsArray.join(" ");
+                            }
+
+                            connection.query(`SELECT * FROM employee WHERE role_id=${roleID1}${roleIDsString}`, function (err, employeeData) {
+                                if (err)
+                                    throw err;
+
+                                let employeeArray = [];
+
+                                let rolePlaceHolder;
+                                let managerPlaceHolder
+
+                                for (let i = 0; i < employeeData.length; i++) {
+                                    for (let x = 0; x < roleIDs.length; x++) {
+                                        if (employeeData[i].role_id === roleIDs[x]) {
+                                            rolePlaceHolder = roleTitle[x];
+                                        }
+                                    }
+
+                                    for (let y = 0; y < employeeData.length; y++) {
+                                        if (employeeData[i].manager_id === employeeData[y].id) {
+                                            managerPlaceHolder = employeeData[y].first_name;
+                                        }
+                                    }
+
+                                    var employeeObject = {
+                                        id: employeeData[i].id,
+                                        first_name: employeeData[i].first_name,
+                                        last_name: employeeData[i].last_name,
+                                        role: rolePlaceHolder,
+                                        manager: managerPlaceHolder
+                                    }
+
+                                    employeeArray.push(employeeObject);
+                                }
+
+                                if (employeeArray.length > 0) {
+                                    console.log("");
+                                    console.table(employeeArray);
+                                }
+                                else {
+                                    console.log("\nThere are currently no employees in this department.\n")
+                                }
+
+                                mainMenu();
+                            });
+                        }
+                    })
+                });
+        }
+    })
 }
 
 function viewRoles() {
@@ -75,38 +188,76 @@ function viewRoles() {
         const roleTitle = roleData.map(role => role.title);
         const roleIDs = roleData.map(role => role.id);
 
-        console.log(roleTitle);
-        console.log(roleIDs);
+        if (roleIDs.length < 1) {
+            console.log("\nThere are currently no roles.\n")
 
-        inquirer
-            .prompt([
-                {
-                    type: "list",
-                    name: "role",
-                    message: "Which role would you like to view?",
-                    choices: roleTitle
-                }
-            ])
-            .then(function (response) {
+            mainMenu();
 
-                console.log(response);
-
-                for (let i = 0; i < roleTitle.length; i++) {
-
-                    if (response.role === roleTitle[i]) {
-
-                        roleIDString = roleIDs[i].toString();
-
-                        connection.query(`SELECT * FROM employee WHERE role_id=${roleIDString}`, function (err, res) {
-                            if (err)
-                                throw err;
-                            console.table(res);
-
-                            mainMenu();
-                        });
+        } else {
+            inquirer
+                .prompt([
+                    {
+                        type: "list",
+                        name: "role",
+                        message: "Which role would you like to view?",
+                        choices: roleTitle
                     }
-                }
-            });
+                ])
+                .then(function (response) {
+
+                    for (let i = 0; i < roleTitle.length; i++) {
+
+                        if (response.role === roleTitle[i]) {
+
+                            roleIDString = roleIDs[i].toString();
+
+                            connection.query(`SELECT * FROM employee WHERE role_id=${roleIDString}`, function (err, employeeData) {
+                                if (err)
+                                    throw err;
+
+                                let employeeArray = [];
+
+                                let rolePlaceHolder;
+                                let managerPlaceHolder
+
+                                for (let i = 0; i < employeeData.length; i++) {
+                                    for (let x = 0; x < roleIDs.length; x++) {
+                                        if (employeeData[i].role_id === roleIDs[x]) {
+                                            rolePlaceHolder = roleTitle[x];
+                                        }
+                                    }
+
+                                    for (let y = 0; y < employeeData.length; y++) {
+                                        if (employeeData[i].manager_id === employeeData[y].id) {
+                                            managerPlaceHolder = employeeData[y].first_name;
+                                        }
+                                    }
+
+                                    var employeeObject = {
+                                        id: employeeData[i].id,
+                                        first_name: employeeData[i].first_name,
+                                        last_name: employeeData[i].last_name,
+                                        role: rolePlaceHolder,
+                                        manager: managerPlaceHolder
+                                    }
+
+                                    employeeArray.push(employeeObject);
+                                }
+
+                                if (employeeArray.length > 0) {
+                                    console.log("");
+                                    console.table(employeeArray);
+                                }
+                                else {
+                                    console.log("\nThere are currently no employees in this category.\n")
+                                }
+
+                                mainMenu();
+                            });
+                        }
+                    }
+                });
+        }
     })
 }
 
@@ -118,43 +269,56 @@ function viewEmployees() {
         const roleTitle = roleData.map(role => role.title);
         const roleIDs = roleData.map(role => role.id);
 
-        connection.query("SELECT * FROM employee", function (err, employeeData) {
-            if (err)
-                throw err;
-
-            let employeeArray = [];
-
-            let rolePlaceHolder;
-            let managerPlaceHolder
-
-            for (let i = 0; i < employeeData.length; i++) {
-                for (let x = 0; x < roleIDs.length; x++) {
-                    if (employeeData[i].role_id === roleIDs[x]){
-                        rolePlaceHolder = roleTitle[x];
-                    }
-                }
-
-                for (let y = 0; y < employeeData.length; y++) {
-                    if (employeeData[i].manager_id === employeeData[y].id){
-                        managerPlaceHolder = employeeData[y].first_name;
-                    }
-                }
-                
-                var employeeObject = {
-                    id: employeeData[i].id,
-                    first_name: employeeData[i].first_name,
-                    last_name: employeeData[i].last_name,
-                    role: rolePlaceHolder,
-                    manager: managerPlaceHolder
-                }
-
-                employeeArray.push(employeeObject);
-            }
-
-            console.table(employeeArray);
+        if (roleIDs.length < 1) {
+            console.log("\nThere are currently no roles.\n")
 
             mainMenu();
-        })
+
+        } else {
+            connection.query("SELECT * FROM employee", function (err, employeeData) {
+                if (err)
+                    throw err;
+
+                let employeeArray = [];
+
+                let rolePlaceHolder;
+                let managerPlaceHolder
+
+                for (let i = 0; i < employeeData.length; i++) {
+                    for (let x = 0; x < roleIDs.length; x++) {
+                        if (employeeData[i].role_id === roleIDs[x]) {
+                            rolePlaceHolder = roleTitle[x];
+                        }
+                    }
+
+                    for (let y = 0; y < employeeData.length; y++) {
+                        if (employeeData[i].manager_id === employeeData[y].id) {
+                            managerPlaceHolder = employeeData[y].first_name;
+                        }
+                    }
+
+                    var employeeObject = {
+                        id: employeeData[i].id,
+                        first_name: employeeData[i].first_name,
+                        last_name: employeeData[i].last_name,
+                        role: rolePlaceHolder,
+                        manager: managerPlaceHolder
+                    }
+
+                    employeeArray.push(employeeObject);
+                }
+
+                if (employeeArray.length > 0) {
+                    console.log("");
+                    console.table(employeeArray);
+                }
+                else {
+                    console.log("\nThere are currently no employees.\n")
+                }
+
+                mainMenu();
+            })
+        }
     })
 
 }
