@@ -130,48 +130,64 @@ function viewDepartments() {
                                 roleIDsString = roleIDsArray.join(" ");
                             }
 
-                            connection.query(`SELECT * FROM employee WHERE role_id=${roleID1}${roleIDsString}`, function (err, employeeData) {
+                            connection.query("SELECT * FROM employee", function (err, fullEmployeeData) {
                                 if (err)
                                     throw err;
 
-                                let employeeArray = [];
+                                const allEmployeeNames = fullEmployeeData.map(employee => employee.first_name);
+                                const allEmployeeIDs = fullEmployeeData.map(employee => employee.id);
 
-                                let rolePlaceHolder;
-                                let managerPlaceHolder
+                                connection.query(`SELECT * FROM employee WHERE role_id=${roleID1}${roleIDsString}`, function (err, employeeData) {
+                                    if (err)
+                                        throw err;
 
-                                for (let i = 0; i < employeeData.length; i++) {
-                                    for (let x = 0; x < roleIDs.length; x++) {
-                                        if (employeeData[i].role_id === roleIDs[x]) {
-                                            rolePlaceHolder = roleTitle[x];
+                                    let employeeArray = [];
+
+                                    let rolePlaceHolder;
+                                    let managerPlaceHolder
+
+                                    for (let i = 0; i < employeeData.length; i++) {
+                                        for (let x = 0; x < roleIDs.length; x++) {
+                                            if (employeeData[i].role_id === roleIDs[x]) {
+                                                rolePlaceHolder = roleTitle[x];
+
+                                                if (employeeData[i].manager_id === null) {
+
+                                                    managerPlaceHolder = "N/A"
+
+                                                } else {
+
+                                                    for (let y = 0; y < allEmployeeIDs.length; y++) {
+                                                        if (employeeData[i].manager_id === allEmployeeIDs[y]) {
+                                                            managerPlaceHolder = allEmployeeNames[y];
+                                                        }
+                                                    }
+                                                }
+                                            }
                                         }
-                                    }
 
-                                    for (let y = 0; y < employeeData.length; y++) {
-                                        if (employeeData[i].manager_id === employeeData[y].id) {
-                                            managerPlaceHolder = employeeData[y].first_name;
+                                        var employeeObject = {
+                                            id: employeeData[i].id,
+                                            first_name: employeeData[i].first_name,
+                                            last_name: employeeData[i].last_name,
+                                            role: rolePlaceHolder,
+                                            manager: managerPlaceHolder
                                         }
+
+                                        employeeArray.push(employeeObject);
+                                        console.log(employeeObject);
                                     }
 
-                                    var employeeObject = {
-                                        id: employeeData[i].id,
-                                        first_name: employeeData[i].first_name,
-                                        last_name: employeeData[i].last_name,
-                                        role: rolePlaceHolder,
-                                        manager: managerPlaceHolder
+                                    if (employeeArray.length > 0) {
+                                        console.log("");
+                                        console.table(employeeArray);
+                                    }
+                                    else {
+                                        console.log("\nThere are currently no employees in this department.\n")
                                     }
 
-                                    employeeArray.push(employeeObject);
-                                }
-
-                                if (employeeArray.length > 0) {
-                                    console.log("");
-                                    console.table(employeeArray);
-                                }
-                                else {
-                                    console.log("\nThere are currently no employees in this department.\n")
-                                }
-
-                                mainMenu();
+                                    mainMenu();
+                                });
                             });
                         }
                     })
@@ -211,48 +227,63 @@ function viewRoles() {
 
                             roleIDString = roleIDs[i].toString();
 
-                            connection.query(`SELECT * FROM employee WHERE role_id=${roleIDString}`, function (err, employeeData) {
+                            connection.query("SELECT * FROM employee", function (err, fullEmployeeData) {
                                 if (err)
                                     throw err;
 
-                                let employeeArray = [];
+                                const allEmployeeNames = fullEmployeeData.map(employee => employee.first_name);
+                                const allEmployeeIDs = fullEmployeeData.map(employee => employee.id);
 
-                                let rolePlaceHolder;
-                                let managerPlaceHolder
+                                connection.query(`SELECT * FROM employee WHERE role_id=${roleIDString}`, function (err, employeeData) {
+                                    if (err)
+                                        throw err;
 
-                                for (let i = 0; i < employeeData.length; i++) {
-                                    for (let x = 0; x < roleIDs.length; x++) {
-                                        if (employeeData[i].role_id === roleIDs[x]) {
-                                            rolePlaceHolder = roleTitle[x];
+                                    let employeeArray = [];
+
+                                    let rolePlaceHolder;
+                                    let managerPlaceHolder
+
+                                    for (let i = 0; i < employeeData.length; i++) {
+                                        for (let x = 0; x < roleIDs.length; x++) {
+                                            if (employeeData[i].role_id === roleIDs[x]) {
+                                                rolePlaceHolder = roleTitle[x];
+
+                                                if (employeeData[i].manager_id === null) {
+
+                                                    managerPlaceHolder = "N/A"
+
+                                                } else {
+
+                                                    for (let y = 0; y < allEmployeeIDs.length; y++) {
+                                                        if (employeeData[i].manager_id === allEmployeeIDs[y]) {
+                                                            managerPlaceHolder = allEmployeeNames[y];
+                                                        }
+                                                    }
+                                                }
+                                            }
                                         }
-                                    }
 
-                                    for (let y = 0; y < employeeData.length; y++) {
-                                        if (employeeData[i].manager_id === employeeData[y].id) {
-                                            managerPlaceHolder = employeeData[y].first_name;
+                                        var employeeObject = {
+                                            id: employeeData[i].id,
+                                            first_name: employeeData[i].first_name,
+                                            last_name: employeeData[i].last_name,
+                                            role: rolePlaceHolder,
+                                            manager: managerPlaceHolder
                                         }
+
+                                        employeeArray.push(employeeObject);
                                     }
 
-                                    var employeeObject = {
-                                        id: employeeData[i].id,
-                                        first_name: employeeData[i].first_name,
-                                        last_name: employeeData[i].last_name,
-                                        role: rolePlaceHolder,
-                                        manager: managerPlaceHolder
+                                    if (employeeArray.length > 0) {
+                                        console.log("");
+                                        console.table(employeeArray);
+                                    }
+                                    else {
+                                        console.log("\nThere are currently no employees in this category.\n")
                                     }
 
-                                    employeeArray.push(employeeObject);
-                                }
-
-                                if (employeeArray.length > 0) {
-                                    console.log("");
-                                    console.table(employeeArray);
-                                }
-                                else {
-                                    console.log("\nThere are currently no employees in this category.\n")
-                                }
-
-                                mainMenu();
+                                    mainMenu();
+                                });
                             });
                         }
                     }
@@ -279,6 +310,9 @@ function viewEmployees() {
                 if (err)
                     throw err;
 
+                const allEmployeeNames = employeeData.map(employee => employee.first_name);
+                const allEmployeeIDs = employeeData.map(employee => employee.id);
+
                 let employeeArray = [];
 
                 let rolePlaceHolder;
@@ -288,12 +322,19 @@ function viewEmployees() {
                     for (let x = 0; x < roleIDs.length; x++) {
                         if (employeeData[i].role_id === roleIDs[x]) {
                             rolePlaceHolder = roleTitle[x];
-                        }
-                    }
 
-                    for (let y = 0; y < employeeData.length; y++) {
-                        if (employeeData[i].manager_id === employeeData[y].id) {
-                            managerPlaceHolder = employeeData[y].first_name;
+                            if (employeeData[i].manager_id === null) {
+
+                                managerPlaceHolder = "N/A"
+
+                            } else {
+
+                                for (let y = 0; y < allEmployeeIDs.length; y++) {
+                                    if (employeeData[i].manager_id === allEmployeeIDs[y]) {
+                                        managerPlaceHolder = allEmployeeNames[y];
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -481,7 +522,7 @@ function addEmployee() {
                                     }
                                 }
 
-                                connection.query(
+                                var x = connection.query(
                                     "INSERT INTO employee SET ?",
                                     {
                                         first_name: response.first_name,
@@ -491,6 +532,8 @@ function addEmployee() {
                                     }
                                 );
                                 console.log("Employee added successfully!\n");
+
+                                console.log(x);
 
                                 mainMenu();
                             });
