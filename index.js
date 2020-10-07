@@ -116,14 +116,14 @@ function viewDepartments() {
 
                             for (let i = 0; i < roleIDs.length; i++) {
                                 if (i > 0) {
-                                    let currentRoleID = i.toString();
+                                    let currentRoleID = roleIDs[i].toString();
                                     let newRoleID = ` OR role_id=${currentRoleID}`;
                                     roleIDsArray.push(newRoleID);
 
                                     useRoleIDsArray = true;
                                 }
                             }
-
+                            
                             let roleID1 = roleIDs[0].toString();
 
                             let roleIDsString = "";
@@ -605,7 +605,7 @@ function addEmployee() {
                                     }
                                 }
 
-                                var x = connection.query(
+                                connection.query(
                                     "INSERT INTO employee SET ?",
                                     {
                                         first_name: response.first_name,
@@ -615,8 +615,6 @@ function addEmployee() {
                                     }
                                 );
                                 console.log("Employee added successfully!\n");
-
-                                console.log(x);
 
                                 mainMenu();
                             });
@@ -645,8 +643,6 @@ function updateEmployeeRole() {
                 const availableRoles = roleData.map(role => role.title);
                 const availableRolesID = roleData.map(role => role.id);
 
-                console.log(availableRolesID);
-
                 if (roleData.length < 1) {
                     console.log("\nThere are currently no roles. You must add a role before you can update an employee.\n")
 
@@ -661,11 +657,6 @@ function updateEmployeeRole() {
                         const lastNames = employeeData.map(employee => employee.last_name);
                         const employeeIDList = employeeData.map(employee => employee.id);
                         const employeeRoleIDList = employeeData.map(employee => employee.role_id);
-
-                        console.log(firstNames);
-                        console.log(lastNames);
-                        console.log(employeeIDList);
-                        console.log(employeeRoleIDList);
 
                         var fullNameArray = [];
 
@@ -697,11 +688,6 @@ function updateEmployeeRole() {
                                         if (fullNameArray[i] === response1.whichEmployee){
                                             var currentEmployeeRoleID = employeeRoleIDList[i];
                                             var currentEmployeeID = employeeIDList[i];
-
-                                            console.log("currentEmployeeRoleID");
-                                            console.log(currentEmployeeRoleID);
-                                            console.log("currentEmployeeID");
-                                            console.log(currentEmployeeID);
                                         }
                                     }
 
@@ -722,14 +708,7 @@ function updateEmployeeRole() {
                                                 }
                                             }
 
-                                            console.log("response2.whichRole");
-                                            console.log(newRoleID);
-                                            console.log("currentEmployeeRoleID");
-                                            console.log(currentEmployeeRoleID);
-                                            console.log("currentEmployeeID");
-                                            console.log(currentEmployeeID);
-
-                                            var w = connection.query(
+                                            connection.query(
                                                 "UPDATE employee SET ? WHERE ? AND ?",
                                                 [
                                                     {
@@ -743,8 +722,6 @@ function updateEmployeeRole() {
                                                     }
                                                 ],
                                             );
-
-                                            console.log(w);
 
                                             mainMenu();
                                         });

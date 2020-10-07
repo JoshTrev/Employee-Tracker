@@ -47,7 +47,8 @@ For this assignment I was tasked with creating a Command Line Interface (CLI) ap
 
 https://github.com/JoshTrev/Employee-Tracker
 
-![ReadMe Screenshot](/Assets/png)
+![Image of Application](\Assets\EmployeeTrackerScreenshot.png)
 
 ## Link To Video
 
+https://drive.google.com/file/d/1KQwD2hy4cY0t0t64WFx9v1W4FPUdHKvk/view
