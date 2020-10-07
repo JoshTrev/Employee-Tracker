@@ -35,30 +35,33 @@ function mainMenu() {
                 type: "list",
                 name: "menuOptions",
                 message: "What would you like to do?",
-                choices: ["View Departments", "View Roles", "View Employees", "Add Department", "Add Role", "Add Employee", "Update Employee Role"],
+                choices: ["View Departments", "View Roles", "View Employees", "Add Department", "Add Role", "Add Employee", "Update Employee Role", "EXIT"],
             }
         ])
         .then(function (response) {
             if (response.menuOptions === "View Departments") {
                 viewDepartments();
             }
-            if (response.menuOptions === "View Roles") {
+            else if (response.menuOptions === "View Roles") {
                 viewRoles();
             }
-            if (response.menuOptions === "View Employees") {
+            else if (response.menuOptions === "View Employees") {
                 viewEmployees();
             }
-            if (response.menuOptions === "Add Department") {
+            else if (response.menuOptions === "Add Department") {
                 addDepartment();
             }
-            if (response.menuOptions === "Add Role") {
+            else if (response.menuOptions === "Add Role") {
                 addRole();
             }
-            if (response.menuOptions === "Add Employee") {
+            else if (response.menuOptions === "Add Employee") {
                 addEmployee();
             }
-            if (response.menuOptions === "Update Employee Role") {
+            else if (response.menuOptions === "Update Employee Role") {
                 updateEmployeeRole();
+            }
+            else if (response.menuOptions === "EXIT") {
+                connection.end();
             }
         });
 }
@@ -102,6 +105,8 @@ function viewDepartments() {
 
                         const roleTitle = roleData.map(role => role.title);
                         const roleIDs = roleData.map(role => role.id);
+                        const roleSalarys = roleData.map(role => role.salary);
+                        const roleDepartmentIDs = roleData.map(role => role.department_id);
 
                         if (roleIDs.length < 1) {
                             console.log("\nThere are currently no employees in this department.\n")
@@ -134,7 +139,8 @@ function viewDepartments() {
                                 if (err)
                                     throw err;
 
-                                const allEmployeeNames = fullEmployeeData.map(employee => employee.first_name);
+                                const allEmployeeNamesFirstName = fullEmployeeData.map(employee => employee.first_name);
+                                const allEmployeeNamesLastName = fullEmployeeData.map(employee => employee.last_name);
                                 const allEmployeeIDs = fullEmployeeData.map(employee => employee.id);
 
                                 connection.query(`SELECT * FROM employee WHERE role_id=${roleID1}${roleIDsString}`, function (err, employeeData) {
@@ -144,22 +150,35 @@ function viewDepartments() {
                                     let employeeArray = [];
 
                                     let rolePlaceHolder;
-                                    let managerPlaceHolder
+                                    let managerPlaceHolderFirstName;
+                                    let managerPlaceHolderLastName;
+                                    let currentSalary;
+                                    let currentDepartment;
 
                                     for (let i = 0; i < employeeData.length; i++) {
                                         for (let x = 0; x < roleIDs.length; x++) {
                                             if (employeeData[i].role_id === roleIDs[x]) {
                                                 rolePlaceHolder = roleTitle[x];
+                                                currentSalary = roleSalarys[x];
+
+                                                for (z = 0; z < departmentIDs.length; z++) {
+
+                                                    if (roleDepartmentIDs[x] === departmentIDs[z]){
+                                                        currentDepartment = department[z]
+                                                    }
+                                                }
 
                                                 if (employeeData[i].manager_id === null) {
 
-                                                    managerPlaceHolder = "N/A"
+                                                    managerPlaceHolderFirstName = "N/A"
+                                                    managerPlaceHolderLastName = ""
 
                                                 } else {
 
                                                     for (let y = 0; y < allEmployeeIDs.length; y++) {
                                                         if (employeeData[i].manager_id === allEmployeeIDs[y]) {
-                                                            managerPlaceHolder = allEmployeeNames[y];
+                                                            managerPlaceHolderFirstName = allEmployeeNamesFirstName[y];
+                                                            managerPlaceHolderLastName = allEmployeeNamesLastName[y];
                                                         }
                                                     }
                                                 }
@@ -171,11 +190,12 @@ function viewDepartments() {
                                             first_name: employeeData[i].first_name,
                                             last_name: employeeData[i].last_name,
                                             role: rolePlaceHolder,
-                                            manager: managerPlaceHolder
+                                            department: currentDepartment,
+                                            salary: currentSalary,
+                                            manager: managerPlaceHolderFirstName + " " + managerPlaceHolderLastName
                                         }
 
                                         employeeArray.push(employeeObject);
-                                        console.log(employeeObject);
                                     }
 
                                     if (employeeArray.length > 0) {
@@ -231,7 +251,8 @@ function viewRoles() {
                                 if (err)
                                     throw err;
 
-                                const allEmployeeNames = fullEmployeeData.map(employee => employee.first_name);
+                                const allEmployeeNamesFirstName = fullEmployeeData.map(employee => employee.first_name);
+                                const allEmployeeNamesLastName = fullEmployeeData.map(employee => employee.last_name);
                                 const allEmployeeIDs = fullEmployeeData.map(employee => employee.id);
 
                                 connection.query(`SELECT * FROM employee WHERE role_id=${roleIDString}`, function (err, employeeData) {
@@ -241,7 +262,8 @@ function viewRoles() {
                                     let employeeArray = [];
 
                                     let rolePlaceHolder;
-                                    let managerPlaceHolder
+                                    let managerPlaceHolderFirstName
+                                    let managerPlaceHolderLastName
 
                                     for (let i = 0; i < employeeData.length; i++) {
                                         for (let x = 0; x < roleIDs.length; x++) {
@@ -250,13 +272,15 @@ function viewRoles() {
 
                                                 if (employeeData[i].manager_id === null) {
 
-                                                    managerPlaceHolder = "N/A"
+                                                    managerPlaceHolderFirstName = "N/A"
+                                                    managerPlaceHolderLastName = ""
 
                                                 } else {
 
                                                     for (let y = 0; y < allEmployeeIDs.length; y++) {
                                                         if (employeeData[i].manager_id === allEmployeeIDs[y]) {
-                                                            managerPlaceHolder = allEmployeeNames[y];
+                                                            managerPlaceHolderFirstName = allEmployeeNamesFirstName[y];
+                                                            managerPlaceHolderLastName = allEmployeeNamesLastName[y];
                                                         }
                                                     }
                                                 }
@@ -268,7 +292,7 @@ function viewRoles() {
                                             first_name: employeeData[i].first_name,
                                             last_name: employeeData[i].last_name,
                                             role: rolePlaceHolder,
-                                            manager: managerPlaceHolder
+                                            manager: managerPlaceHolderFirstName + " " + managerPlaceHolderLastName
                                         }
 
                                         employeeArray.push(employeeObject);
@@ -310,13 +334,15 @@ function viewEmployees() {
                 if (err)
                     throw err;
 
-                const allEmployeeNames = employeeData.map(employee => employee.first_name);
+                const allEmployeeNamesFirstName = employeeData.map(employee => employee.first_name);
+                const allEmployeeNamesLastName = employeeData.map(employee => employee.last_name);
                 const allEmployeeIDs = employeeData.map(employee => employee.id);
 
                 let employeeArray = [];
 
                 let rolePlaceHolder;
-                let managerPlaceHolder
+                let managerPlaceHolderFirstName
+                let managerPlaceHolderLastName
 
                 for (let i = 0; i < employeeData.length; i++) {
                     for (let x = 0; x < roleIDs.length; x++) {
@@ -325,13 +351,15 @@ function viewEmployees() {
 
                             if (employeeData[i].manager_id === null) {
 
-                                managerPlaceHolder = "N/A"
+                                managerPlaceHolderFirstName = "N/A"
+                                managerPlaceHolderLastName = ""
 
                             } else {
 
                                 for (let y = 0; y < allEmployeeIDs.length; y++) {
                                     if (employeeData[i].manager_id === allEmployeeIDs[y]) {
-                                        managerPlaceHolder = allEmployeeNames[y];
+                                        managerPlaceHolderFirstName = allEmployeeNamesFirstName[y];
+                                        managerPlaceHolderLastName = allEmployeeNamesLastName[y];
                                     }
                                 }
                             }
@@ -343,7 +371,7 @@ function viewEmployees() {
                         first_name: employeeData[i].first_name,
                         last_name: employeeData[i].last_name,
                         role: rolePlaceHolder,
-                        manager: managerPlaceHolder
+                        manager: managerPlaceHolderFirstName + " " + managerPlaceHolderLastName
                     }
 
                     employeeArray.push(employeeObject);
