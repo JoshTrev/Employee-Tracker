@@ -163,7 +163,7 @@ function viewDepartments() {
 
                                                 for (z = 0; z < departmentIDs.length; z++) {
 
-                                                    if (roleDepartmentIDs[x] === departmentIDs[z]){
+                                                    if (roleDepartmentIDs[x] === departmentIDs[z]) {
                                                         currentDepartment = department[z]
                                                     }
                                                 }
@@ -217,178 +217,236 @@ function viewDepartments() {
 }
 
 function viewRoles() {
-    connection.query("SELECT * FROM role", function (err, roleData) {
+    connection.query("SELECT * FROM department", function (err, departmentData) {
         if (err)
             throw err;
 
-        const roleTitle = roleData.map(role => role.title);
-        const roleIDs = roleData.map(role => role.id);
+        const department = departmentData.map(role => role.name);
+        const departmentIDs = departmentData.map(role => role.id);
 
-        if (roleIDs.length < 1) {
-            console.log("\nThere are currently no roles.\n")
+        if (departmentIDs.length < 1) {
+            console.log("\nThere are currently no departments.\n")
 
             mainMenu();
 
         } else {
-            inquirer
-                .prompt([
-                    {
-                        type: "list",
-                        name: "role",
-                        message: "Which role would you like to view?",
-                        choices: roleTitle
-                    }
-                ])
-                .then(function (response) {
-
-                    for (let i = 0; i < roleTitle.length; i++) {
-
-                        if (response.role === roleTitle[i]) {
-
-                            roleIDString = roleIDs[i].toString();
-
-                            connection.query("SELECT * FROM employee", function (err, fullEmployeeData) {
-                                if (err)
-                                    throw err;
-
-                                const allEmployeeNamesFirstName = fullEmployeeData.map(employee => employee.first_name);
-                                const allEmployeeNamesLastName = fullEmployeeData.map(employee => employee.last_name);
-                                const allEmployeeIDs = fullEmployeeData.map(employee => employee.id);
-
-                                connection.query(`SELECT * FROM employee WHERE role_id=${roleIDString}`, function (err, employeeData) {
-                                    if (err)
-                                        throw err;
-
-                                    let employeeArray = [];
-
-                                    let rolePlaceHolder;
-                                    let managerPlaceHolderFirstName
-                                    let managerPlaceHolderLastName
-
-                                    for (let i = 0; i < employeeData.length; i++) {
-                                        for (let x = 0; x < roleIDs.length; x++) {
-                                            if (employeeData[i].role_id === roleIDs[x]) {
-                                                rolePlaceHolder = roleTitle[x];
-
-                                                if (employeeData[i].manager_id === null) {
-
-                                                    managerPlaceHolderFirstName = "N/A"
-                                                    managerPlaceHolderLastName = ""
-
-                                                } else {
-
-                                                    for (let y = 0; y < allEmployeeIDs.length; y++) {
-                                                        if (employeeData[i].manager_id === allEmployeeIDs[y]) {
-                                                            managerPlaceHolderFirstName = allEmployeeNamesFirstName[y];
-                                                            managerPlaceHolderLastName = allEmployeeNamesLastName[y];
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        var employeeObject = {
-                                            id: employeeData[i].id,
-                                            first_name: employeeData[i].first_name,
-                                            last_name: employeeData[i].last_name,
-                                            role: rolePlaceHolder,
-                                            manager: managerPlaceHolderFirstName + " " + managerPlaceHolderLastName
-                                        }
-
-                                        employeeArray.push(employeeObject);
-                                    }
-
-                                    if (employeeArray.length > 0) {
-                                        console.log("");
-                                        console.table(employeeArray);
-                                    }
-                                    else {
-                                        console.log("\nThere are currently no employees in this category.\n")
-                                    }
-
-                                    mainMenu();
-                                });
-                            });
-                        }
-                    }
-                });
-        }
-    })
-}
-
-function viewEmployees() {
-    connection.query("SELECT * FROM role", function (err, roleData) {
-        if (err)
-            throw err;
-
-        const roleTitle = roleData.map(role => role.title);
-        const roleIDs = roleData.map(role => role.id);
-
-        if (roleIDs.length < 1) {
-            console.log("\nThere are currently no roles.\n")
-
-            mainMenu();
-
-        } else {
-            connection.query("SELECT * FROM employee", function (err, employeeData) {
+            connection.query("SELECT * FROM role", function (err, roleData) {
                 if (err)
                     throw err;
 
-                const allEmployeeNamesFirstName = employeeData.map(employee => employee.first_name);
-                const allEmployeeNamesLastName = employeeData.map(employee => employee.last_name);
-                const allEmployeeIDs = employeeData.map(employee => employee.id);
+                const roleTitle = roleData.map(role => role.title);
+                const roleIDs = roleData.map(role => role.id);
+                const roleSalarys = roleData.map(role => role.salary);
+                const roleDepartmentIDs = roleData.map(role => role.department_id);
 
-                let employeeArray = [];
+                if (roleIDs.length < 1) {
+                    console.log("\nThere are currently no roles.\n")
 
-                let rolePlaceHolder;
-                let managerPlaceHolderFirstName
-                let managerPlaceHolderLastName
+                    mainMenu();
 
-                for (let i = 0; i < employeeData.length; i++) {
-                    for (let x = 0; x < roleIDs.length; x++) {
-                        if (employeeData[i].role_id === roleIDs[x]) {
-                            rolePlaceHolder = roleTitle[x];
+                } else {
+                    inquirer
+                        .prompt([
+                            {
+                                type: "list",
+                                name: "role",
+                                message: "Which role would you like to view?",
+                                choices: roleTitle
+                            }
+                        ])
+                        .then(function (response) {
 
-                            if (employeeData[i].manager_id === null) {
+                            for (let i = 0; i < roleTitle.length; i++) {
 
-                                managerPlaceHolderFirstName = "N/A"
-                                managerPlaceHolderLastName = ""
+                                if (response.role === roleTitle[i]) {
 
-                            } else {
+                                    roleIDString = roleIDs[i].toString();
 
-                                for (let y = 0; y < allEmployeeIDs.length; y++) {
-                                    if (employeeData[i].manager_id === allEmployeeIDs[y]) {
-                                        managerPlaceHolderFirstName = allEmployeeNamesFirstName[y];
-                                        managerPlaceHolderLastName = allEmployeeNamesLastName[y];
+                                    connection.query("SELECT * FROM employee", function (err, fullEmployeeData) {
+                                        if (err)
+                                            throw err;
+
+                                        const allEmployeeNamesFirstName = fullEmployeeData.map(employee => employee.first_name);
+                                        const allEmployeeNamesLastName = fullEmployeeData.map(employee => employee.last_name);
+                                        const allEmployeeIDs = fullEmployeeData.map(employee => employee.id);
+
+                                        connection.query(`SELECT * FROM employee WHERE role_id=${roleIDString}`, function (err, employeeData) {
+                                            if (err)
+                                                throw err;
+
+                                            let employeeArray = [];
+
+                                            let rolePlaceHolder;
+                                            let managerPlaceHolderFirstName;
+                                            let managerPlaceHolderLastName;
+                                            let currentSalary;
+                                            let currentDepartment;
+
+                                            for (let i = 0; i < employeeData.length; i++) {
+                                                for (let x = 0; x < roleIDs.length; x++) {
+                                                    if (employeeData[i].role_id === roleIDs[x]) {
+                                                        rolePlaceHolder = roleTitle[x];
+                                                        currentSalary = roleSalarys[x];
+
+                                                        for (z = 0; z < departmentIDs.length; z++) {
+
+                                                            if (roleDepartmentIDs[x] === departmentIDs[z]) {
+                                                                currentDepartment = department[z]
+                                                            }
+                                                        }
+
+                                                        if (employeeData[i].manager_id === null) {
+
+                                                            managerPlaceHolderFirstName = "N/A"
+                                                            managerPlaceHolderLastName = ""
+
+                                                        } else {
+
+                                                            for (let y = 0; y < allEmployeeIDs.length; y++) {
+                                                                if (employeeData[i].manager_id === allEmployeeIDs[y]) {
+                                                                    managerPlaceHolderFirstName = allEmployeeNamesFirstName[y];
+                                                                    managerPlaceHolderLastName = allEmployeeNamesLastName[y];
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+
+                                                var employeeObject = {
+                                                    id: employeeData[i].id,
+                                                    first_name: employeeData[i].first_name,
+                                                    last_name: employeeData[i].last_name,
+                                                    role: rolePlaceHolder,
+                                                    department: currentDepartment,
+                                                    salary: currentSalary,
+                                                    manager: managerPlaceHolderFirstName + " " + managerPlaceHolderLastName
+                                                }
+
+                                                employeeArray.push(employeeObject);
+                                            }
+
+                                            if (employeeArray.length > 0) {
+                                                console.log("");
+                                                console.table(employeeArray);
+                                            }
+                                            else {
+                                                console.log("\nThere are currently no employees in this category.\n")
+                                            }
+
+                                            mainMenu();
+                                        });
+                                    });
+                                }
+                            }
+                        });
+                }
+            })
+        }
+    });
+}
+
+function viewEmployees() {
+    connection.query("SELECT * FROM department", function (err, departmentData) {
+        if (err)
+            throw err;
+
+        const department = departmentData.map(role => role.name);
+        const departmentIDs = departmentData.map(role => role.id);
+
+        if (departmentIDs.length < 1) {
+            console.log("\nThere are currently no departments.\n")
+
+            mainMenu();
+
+        } else {
+            connection.query("SELECT * FROM role", function (err, roleData) {
+                if (err)
+                    throw err;
+
+                const roleTitle = roleData.map(role => role.title);
+                const roleIDs = roleData.map(role => role.id);
+                const roleSalarys = roleData.map(role => role.salary);
+                const roleDepartmentIDs = roleData.map(role => role.department_id);
+
+                if (roleIDs.length < 1) {
+                    console.log("\nThere are currently no roles.\n")
+
+                    mainMenu();
+
+                } else {
+                    connection.query("SELECT * FROM employee", function (err, employeeData) {
+                        if (err)
+                            throw err;
+
+                        const allEmployeeNamesFirstName = employeeData.map(employee => employee.first_name);
+                        const allEmployeeNamesLastName = employeeData.map(employee => employee.last_name);
+                        const allEmployeeIDs = employeeData.map(employee => employee.id);
+
+                        let employeeArray = [];
+
+                        let rolePlaceHolder;
+                        let managerPlaceHolderFirstName;
+                        let managerPlaceHolderLastName;
+                        let currentSalary;
+                        let currentDepartment;
+
+                        for (let i = 0; i < employeeData.length; i++) {
+                            for (let x = 0; x < roleIDs.length; x++) {
+                                if (employeeData[i].role_id === roleIDs[x]) {
+                                    rolePlaceHolder = roleTitle[x];
+                                    currentSalary = roleSalarys[x];
+
+                                    for (z = 0; z < departmentIDs.length; z++) {
+
+                                        if (roleDepartmentIDs[x] === departmentIDs[z]) {
+                                            currentDepartment = department[z]
+                                        }
+                                    }
+
+                                    if (employeeData[i].manager_id === null) {
+
+                                        managerPlaceHolderFirstName = "N/A"
+                                        managerPlaceHolderLastName = ""
+
+                                    } else {
+
+                                        for (let y = 0; y < allEmployeeIDs.length; y++) {
+                                            if (employeeData[i].manager_id === allEmployeeIDs[y]) {
+                                                managerPlaceHolderFirstName = allEmployeeNamesFirstName[y];
+                                                managerPlaceHolderLastName = allEmployeeNamesLastName[y];
+                                            }
+                                        }
                                     }
                                 }
                             }
+
+                            var employeeObject = {
+                                id: employeeData[i].id,
+                                first_name: employeeData[i].first_name,
+                                last_name: employeeData[i].last_name,
+                                role: rolePlaceHolder,
+                                department: currentDepartment,
+                                salary: currentSalary,
+                                manager: managerPlaceHolderFirstName + " " + managerPlaceHolderLastName
+                            }
+
+                            employeeArray.push(employeeObject);
                         }
-                    }
 
-                    var employeeObject = {
-                        id: employeeData[i].id,
-                        first_name: employeeData[i].first_name,
-                        last_name: employeeData[i].last_name,
-                        role: rolePlaceHolder,
-                        manager: managerPlaceHolderFirstName + " " + managerPlaceHolderLastName
-                    }
+                        if (employeeArray.length > 0) {
+                            console.log("");
+                            console.table(employeeArray);
+                        }
+                        else {
+                            console.log("\nThere are currently no employees.\n")
+                        }
 
-                    employeeArray.push(employeeObject);
+                        mainMenu();
+                    })
                 }
-
-                if (employeeArray.length > 0) {
-                    console.log("");
-                    console.table(employeeArray);
-                }
-                else {
-                    console.log("\nThere are currently no employees.\n")
-                }
-
-                mainMenu();
             })
         }
-    })
+    });
 }
 
 function addDepartment() {
