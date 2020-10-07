@@ -403,7 +403,102 @@ function addRole() {
 }
 
 function addEmployee() {
+    connection.query("SELECT * FROM department", function (err, departmentData) {
+        if (err)
+            throw err;
 
+        const departmentNames = departmentData.map(department => department.name);
+        const departmentID = departmentData.map(department => department.id);
+
+        if (departmentID.length < 1) {
+            console.log("\nThere are currently no departments. Please add a department before adding a role.\n")
+
+            mainMenu();
+
+        } else {
+
+            connection.query("SELECT * FROM role", function (err, roleData) {
+                if (err)
+                    throw err;
+
+                const roleTitle = roleData.map(role => role.title);
+                const roleIDs = roleData.map(role => role.id);
+
+                if (roleIDs.length < 1) {
+                    console.log("\nThere are currently no roles. Please add a role before adding an employee.\n")
+
+                    mainMenu();
+
+                } else {
+
+                    connection.query("SELECT * FROM employee", function (err, employeeData) {
+                        if (err)
+                            throw err;
+
+                        const employeeNames = employeeData.map(employee => employee.first_name);
+                        const employeeIDs = employeeData.map(employee => employee.id);
+
+                        employeeNames.push("N/A");
+
+                        inquirer
+                            .prompt([
+                                {
+                                    type: "input",
+                                    name: "first_name",
+                                    message: "First Name: "
+                                },
+                                {
+                                    type: "input",
+                                    name: "last_name",
+                                    message: "Last Name: "
+                                },
+                                {
+                                    type: "list",
+                                    name: "role",
+                                    message: "Which role would you like to add this employee to?",
+                                    choices: roleTitle
+                                },
+                                {
+                                    type: "list",
+                                    name: "manager",
+                                    message: "Who will be this employee's manager?",
+                                    choices: employeeNames
+                                }
+                            ])
+                            .then(function (response) {
+
+                                for (let i = 0; i < roleTitle.length; i++) {
+                                    if (response.role === roleTitle[i]) {
+                                        var chosenRoleID = roleIDs[i];
+                                    }
+                                }
+
+                                for (let i = 0; i < employeeNames.length - 1; i++) {
+                                    if (response.manager === employeeNames[i]) {
+                                        var chosenManagerID = employeeIDs[i];
+                                    } else {
+                                        var chosenManagerID = null;
+                                    }
+                                }
+
+                                connection.query(
+                                    "INSERT INTO employee SET ?",
+                                    {
+                                        first_name: response.first_name,
+                                        last_name: response.last_name,
+                                        role_id: chosenRoleID,
+                                        manager_id: chosenManagerID
+                                    }
+                                );
+                                console.log("Employee added successfully!\n");
+
+                                mainMenu();
+                            });
+                    });
+                }
+            });
+        }
+    });
 }
 
 function updateEmployeeRole() {

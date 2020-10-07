@@ -18,5 +18,3 @@ INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES ("Joe", 
 INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES ("John", "D", 3, 1);
 INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES ("Sam", "S", 2, 1);
 INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES ("Conor", "Q", 4, 1);
-
-SELECT employee.first_name, employee.last_name, role.title FROM employee LEFT JOIN role on employee.role_id = role.id;
