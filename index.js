@@ -16,12 +16,9 @@ connection.connect(function (err) {
 
     console.log("Connected as ID# " + connection.threadId + "\n");
 
-
-    console.log("\n")
     console.log("--------------------------")
     console.log("\nEmployee Tracker\n")
     console.log("--------------------------")
-    console.log("\n")
     console.log("\n")
 
     mainMenu();
