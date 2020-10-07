@@ -631,5 +631,131 @@ function addEmployee() {
 }
 
 function updateEmployeeRole() {
+    connection.query("SELECT * FROM department", function (err, departmentData) {
+        if (err)
+            throw err;
 
+        if (departmentData.length < 1) {
+            console.log("\nThere are currently no departments. You must add a department before you can update an employee.\n")
+
+            mainMenu();
+
+        } else {
+            connection.query("SELECT * FROM role", function (err, roleData) {
+                if (err)
+                    throw err;
+
+                const availableRoles = roleData.map(role => role.title);
+                const availableRolesID = roleData.map(role => role.id);
+
+                console.log(availableRolesID);
+
+                if (roleData.length < 1) {
+                    console.log("\nThere are currently no roles. You must add a role before you can update an employee.\n")
+
+                    mainMenu();
+
+                } else {
+                    connection.query("SELECT * FROM employee", function (err, employeeData) {
+                        if (err)
+                            throw err;
+
+                        const firstNames = employeeData.map(employee => employee.first_name);
+                        const lastNames = employeeData.map(employee => employee.last_name);
+                        const employeeIDList = employeeData.map(employee => employee.id);
+                        const employeeRoleIDList = employeeData.map(employee => employee.role_id);
+
+                        console.log(firstNames);
+                        console.log(lastNames);
+                        console.log(employeeIDList);
+                        console.log(employeeRoleIDList);
+
+                        var fullNameArray = [];
+
+                        for (let i = 0; i < firstNames.length; i++) {
+                            let fullName = firstNames[i] + " " + lastNames[i];
+
+                            fullNameArray.push(fullName);
+                        }
+
+                        if (employeeData.length < 1) {
+                            console.log("\nThere are currently no employees. You must add an employee before you can update an employee.\n")
+
+                            mainMenu();
+
+                        } else {
+
+                            inquirer
+                                .prompt([
+                                    {
+                                        type: "list",
+                                        name: "whichEmployee",
+                                        message: "Which employee would you like to update?",
+                                        choices: fullNameArray
+                                    }
+                                ])
+                                .then(function (response1) {
+
+                                    for (let i = 0; i < fullNameArray.length; i++){
+                                        if (fullNameArray[i] === response1.whichEmployee){
+                                            var currentEmployeeRoleID = employeeRoleIDList[i];
+                                            var currentEmployeeID = employeeIDList[i];
+
+                                            console.log("currentEmployeeRoleID");
+                                            console.log(currentEmployeeRoleID);
+                                            console.log("currentEmployeeID");
+                                            console.log(currentEmployeeID);
+                                        }
+                                    }
+
+                                    inquirer
+                                        .prompt([
+                                            {
+                                                type: "list",
+                                                name: "whichRole",
+                                                message: `Which new role should ${response1.whichEmployee} be assigned?`,
+                                                choices: availableRoles
+                                            }
+                                        ])
+                                        .then(function (response2) {
+
+                                            for (let i = 0; i < availableRoles.length; i++){
+                                                if (availableRoles[i] === response2.whichRole){
+                                                    var newRoleID = availableRolesID[i];
+                                                }
+                                            }
+
+                                            console.log("response2.whichRole");
+                                            console.log(newRoleID);
+                                            console.log("currentEmployeeRoleID");
+                                            console.log(currentEmployeeRoleID);
+                                            console.log("currentEmployeeID");
+                                            console.log(currentEmployeeID);
+
+                                            var w = connection.query(
+                                                "UPDATE employee SET ? WHERE ? AND ?",
+                                                [
+                                                    {
+                                                        role_id: newRoleID
+                                                    },
+                                                    {
+                                                        role_id: currentEmployeeRoleID
+                                                    },
+                                                    {
+                                                        id: currentEmployeeID
+                                                    }
+                                                ],
+                                            );
+
+                                            console.log(w);
+
+                                            mainMenu();
+                                        });
+                                });
+                        }
+                    })
+                }
+            })
+        }
+    });
 }
